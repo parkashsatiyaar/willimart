@@ -1,0 +1,64 @@
+{% extends 'base.html' %} {% load static %} {% block title %}Willimart | Product
+{%endblock title %} {% block category %} {% for category in categories %}
+<a class="dropdown-item" href="/?category={{category.id}}">{{category.name}}</a>
+{% endfor %} {% endblock category %} {% block body %} {% load cart %}
+<div class="container bootdey">
+  <div class="row">
+    <div class="col-md-12 block card">
+      <div class="panel panel-default panel-order">
+        <div class="panel-heading">
+          <strong>Order history</strong>
+        </div>
+        <div class="panel-body">
+          <div></div>
+          <div class="row">
+            {% for product in products %}
+            <div class="col-md-1">
+              <img
+                src="{{product.product.image.url}}"
+                class="media-object img-thumbnail"
+              />
+            </div>
+            <div class="col-md-11">
+              <div class="row">
+                <div class="col-md-12">
+                  <div class="pull-right">
+                    {% if not order.status %}
+                    <label class="badge text-warning">Pending</label>
+                    {% else %}
+                    <label class="badge text-success">Completed</label>
+                    {% endif %}
+                  </div>
+                  <span><strong>Order ID</strong></span>
+                  <span class="label label-info"
+                    ><span class="text-success">#{{product.id}}</span></span
+                  ><br />
+                  <span><strong>Product Name</strong></span>
+                  <span class="label label-info">{{product.product.name}}</span
+                  ><br />
+                  <span><strong>Shipping Address</strong></span>
+                  <span class="label label-info">{{product.address}}</span
+                  ><br />
+                  <span><strong>Contact No</strong></span>
+                  <span class="label label-info">{{product.phone}}</span><br />
+                  Quantity : {{product.quantity}}, cost:
+                  &#8377;{{product.price|price_total_order:product.quantity}}
+                  <br />
+                </div>
+                <div class="col-md-12">
+                  order made on: {{product.date}} by
+                  <a href="#">{{request.user.email}} </a>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          <div class="panel-footer text-center">
+            We only show past 1 year orders.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endblock body %}
+</div>

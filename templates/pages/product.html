@@ -1,0 +1,82 @@
+{% extends 'base.html' %} {% load static %} {% block title %}Willimart  | Product
+{%endblock title %} {% block category %} {% for category in categories %}
+<a class="dropdown-item" href="/?category={{category.id}}">{{category.name}}</a>
+{% endfor %} {% endblock category %} {% block body %}
+{% load cart %}
+<!--Section: Block Content-->
+<section>
+  <div class="container">
+    <div class="row">
+    {% for product in products %}
+      <div class="block card col-md-6 mb-4 mb-md-0">
+        <div id="mdb-lightbox-ui"></div>
+
+        <div class="mdb-lightbox">
+          <div class="row product-gallery mx-1">
+            <div class="col-12 mb-0 text-center">
+              <figure class="view img-1 overlay rounded z-depth-1 main-img">
+                  <img
+                    src={{product.image.url}}
+                    class="img-fluid z-depth-1"
+                  />
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="block card col-md-6">
+        <h5>{{product.name}}</h5>
+        <p>
+          <span class="mr-1"><strong>&#8377;{{product.price}}</strong></span>
+        </p>
+        <p class="pt-1">{{product.description}}
+        </p>
+        <hr />
+        <div class="card">
+        <form action="/purchase" id="{{product.id}}" method="post">
+        {% csrf_token %}
+        <input type="hidden" value="{{product.id}}" name="product_id" />
+        <a type="button" class="btn btn-block" onclick="mySubmit({{product.id}})">
+          Buy now
+        </a>
+        </form>
+        </div>
+        <div class="card text-center">
+        <form
+              action="/product/{{product.id}}"
+              id="{{product.id}}"
+              method="post"
+            >
+              {% csrf_token %} {% if request.session.cart %} {% comment %}cart
+              {% endcomment %} {% if product|is_in_cart:request.session.cart %}
+              <input type="hidden" value="{{product.id}}" name="product_id" />
+              <a
+                class="btn-primary btn-lg ml-auto"
+                onclick="myremoveSubmit({{product.id}})"
+                >-</a
+              >
+              <i onclick="mySubmit({{product.id}})"
+                >{{product|cart_quantity:request.session.cart}} in cart</i
+              >
+              <a
+                class="btn-primary btn-lg mr-auto"
+                onclick="mySubmit({{product.id}})"
+                >+</a
+              >
+              {% else %}
+              <input type="hidden" value="{{product.id}}" name="product_id" />
+              <a class="btn btn-block" onclick="mySubmit({{product.id}})">Add to cart</a>
+              {% endif %} {% else %}
+              <input type="hidden" value="{{product.id}}" name="product_id" />
+              <a class="btn btn-block" onclick="mySubmit({{product.id}})">Add to cart</a>
+              {% endif %}
+            </form>
+        </div>      
+
+      </div>
+      {% endfor %}
+
+    </div>
+  </div>
+</section>
+<!--Section: Block Content-->
+{% endblock body %}

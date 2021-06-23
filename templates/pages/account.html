@@ -1,0 +1,95 @@
+{% extends 'base.html' %} {% load static %} {% block title %}Willimart | Cart
+{%endblock title %} {% block category %} {% for category in categories %}
+<a class="dropdown-item" href="/?category={{category.id}}">{{category.name}}</a>
+{% endfor %} {% endblock category %} {% block body %}
+<div class="container">
+  <div class="row">
+    <div class="col-md-12 block">
+      <div class="wrapper bg-white mt-sm-5">
+        <h4 class="pb-4 border-bottom">Account settings</h4>
+        <div class="py-2">
+          {% for account in accounts %}
+          <form action="{% url 'account' %}" method="post">
+            {% csrf_token %}
+            <div class="row py-2">
+              <div class="col-md-6">
+                <label for="firstname">First Name</label>
+                <input
+                  type="text"
+                  class="bg-light form-control"
+                  placeholder="Steve"
+                  name="fname"
+                  value="{{account.first_name}}"
+                />
+              </div>
+              <div class="col-md-6 pt-md-0 pt-3">
+                <label for="lastname">Last Name</label>
+                <input
+                  type="text"
+                  class="bg-light form-control"
+                  name="lname"
+                  placeholder="Smith"
+                  value="{{account.last_name}}"
+                />
+              </div>
+            </div>
+            <div class="row py-2">
+              <div class="col-md-6">
+                <label for="email">Email Address</label>
+                <input
+                  type="text"
+                  class="bg-light form-control"
+                  placeholder="steve_@email.com"
+                  name="email"
+                  value="{{account.email}}"
+                />
+              </div>
+              <div class="col-md-6 pt-md-0 pt-3">
+                <label for="phone">Phone Number</label>
+                <input
+                  type="tel"
+                  class="bg-light form-control"
+                  placeholder="+91 913-548-6015"
+                  name="phone"
+                  value="{{account.phone}}"
+                />
+              </div>
+              <div class="col-md-6">
+                <label for="firstname">Password</label>
+                <input
+                  type="text"
+                  class="bg-light form-control"
+                  placeholder="Steve"
+                  name="password"
+                />
+              </div>
+            </div>
+            <div class="py-3 pb-4 border-bottom">
+              <button type="submit" class="btn mr-3">Save Changes</button>
+            </div>
+          </form>
+          {% endfor %}
+          <div class="d-sm-flex align-items-center pt-3" id="deactivate">
+            <div>
+              <b>Deactivate your account</b>
+              <p>you will loss your account access and it cant be undone.</p>
+            </div>
+            <div class="ml-auto">
+              <form action="/delete" method="post">
+                {% csrf_token %}
+                <button
+                  type="submit"
+                  class="btn danger waves-effect waves-light"
+                >
+                  Deactivate
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock body %}

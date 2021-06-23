@@ -1,0 +1,7 @@
+{
+  "python.pythonPath": "C:\\Users\\Parkash\\Anaconda3\\envs\\ecommerce\\python.exe",
+  "python.languageServer": "Pylance",
+  "emmet.includeLanguages": {
+    "javascript": "javascriptreact"
+  }
+}

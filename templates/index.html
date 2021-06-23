@@ -1,0 +1,78 @@
+{% extends 'base.html' %} {% load static %} {% block title %}Willimart | Home
+{%endblock title %} {% block category %} {% for category in categories %}
+<a class="dropdown-item" href="/?category={{category.id}}">{{category.name}}</a>
+{% endfor %} {% endblock category %} {% block body %} {% load cart %}
+<div class="row mx-auto">
+  <div class="col-md-3 fixed filter mx-auto">
+    <div class="product_card text-center">
+      <h3>Filter</h3>
+      <a href="/" class="list-group-item">All Products</a>
+      <ul class="list-group">
+        {% for category in categories %}
+        <a href="/?category={{category.id}}" class="list-group-item"
+          >{{category.name}}</a
+        >
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="col-md-9 ml-auto">
+    <div class="container block text-center">
+      <div class="row ml-auto">
+        {% for product in products %}
+
+        <div
+          class="col-lg-3 col-md-4 product_card product"
+          id="product-{{product.id}}"
+        >
+          <div class="product_img text-center">
+            <a class="link_card" href="/product/{{product.id}}">
+              <img src="{{product.image.url}}" alt="" />
+            </a>
+          </div>
+          <div class="heading">
+            <h6>{{product.name}}</h6>
+          </div>
+          <div class="description">
+            <p>{{product.description |truncatechars:50}}</p>
+          </div>
+          <div class="pricing">
+            <h6><span>&#8377;</span>{{product.price}}</h6>
+          </div>
+          <div class="cart_btn text-center">
+            <form
+              action="/#product-{{product.id}}"
+              id="{{product.id}}"
+              method="post"
+            >
+              {% csrf_token %} {% if request.session.cart %} {% comment %}cart
+              {% endcomment %} {% if product|is_in_cart:request.session.cart %}
+              <input type="hidden" value="{{product.id}}" name="product_id" />
+              <a
+                class="btn-primary btn-lg ml-auto"
+                onclick="myremoveSubmit({{product.id}})"
+                >-</a
+              >
+              <i onclick="mySubmit({{product.id}})"
+                >{{product|cart_quantity:request.session.cart}} in cart</i
+              >
+              <a
+                class="btn-primary btn-lg mr-auto"
+                onclick="mySubmit({{product.id}})"
+                >+</a
+              >
+              {% else %}
+              <input type="hidden" value="{{product.id}}" name="product_id" />
+              <a class="btn" onclick="mySubmit({{product.id}})">Add to cart</a>
+              {% endif %} {% else %}
+              <input type="hidden" value="{{product.id}}" name="product_id" />
+              <a class="btn" onclick="mySubmit({{product.id}})">Add to cart</a>
+              {% endif %}
+            </form>
+          </div>
+        </div>
+        {% endfor %} {% endblock body %}
+      </div>
+    </div>
+  </div>
+</div>
