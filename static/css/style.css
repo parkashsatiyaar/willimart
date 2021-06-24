@@ -111,7 +111,7 @@ a:hover {
 }
 
 .block {
-  margin-top: 13%;
+  margin-top: 15%;
 }
 
 .card {
@@ -169,6 +169,9 @@ a:hover {
 @media screen and (max-width: 980px) {
   .filter {
     display: none;
+  }
+  .block {
+    margin-top: 25%;
   }
 }
 @media screen and (min-width: 980px) {

@@ -75,6 +75,10 @@ def signup(request):
 
 
 def signin(request):
+    if not request.session.get('next_url'):
+        request.session['next_url'] = request.GET.get('next')
+    url = request.session.get('next_url')
+    print(url)
     if not request.session.get('cart'):
         request.session['cart'] = {}
 
@@ -87,7 +91,12 @@ def signin(request):
             user = auth.authenticate(username=username, password=password)
             if user is not None:
                 auth.login(request, user)
-                return redirect('home')
+                if url == "/checkout":
+                    return redirect('cart')
+                elif url:
+                    return HttpResponseRedirect(url)
+                else:
+                    return redirect('home')
             else:
                 messages.info(request, "Invalid Username or Password")
                 return redirect('signin')
