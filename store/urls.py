@@ -14,4 +14,6 @@ urlpatterns = [
     path('account', views.account, name="account"),
     path('purchase', views.purchase, name="purchase"),
     path('delete', views.delete, name="delete"),
+    path('verify', views.verify, name='verify'),
+    path('status', views.status, name='status'),
 ]

@@ -1,9 +1,17 @@
-from django.shortcuts import redirect, render
-from .models import Category, Customer, Product, Order
 from django.contrib import messages
+from django.shortcuts import redirect, render
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
+from django.utils import html
+from django.utils.html import strip_tags
+from django.conf import settings
+from .models import Category, Customer, Product, Order
 from django.contrib.auth.models import User, auth
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect
+from .models import Profile
+import random
+import razorpay
 # Create your views here.
 
 
@@ -60,25 +68,83 @@ def signup(request):
             elif User.objects.filter(username=username).exists():
                 messages.info(request, 'Username Already exist')
                 return redirect('signup')
-            user = User.objects.create_user(
-                username=username, password=password, email=email)
-            user.save()
-            customer = Customer(first_name=fname, last_name=lname,
-                                phone=phone, email=email, user=user)
-            customer.register()
-            auth.login(request, user)
-            return redirect('home')
+            request.session['username'] = username
+            request.session['email'] = email
+            request.session['password'] = password
+            request.session['fname'] = fname
+            request.session['lname'] = lname
+            request.session['phone'] = phone
+            otp = []
+            num = str(random.randint(1000, 9999))
+            for x in num:
+                otp.append(x)
+            context = {'name': username, 'auth_otp': otp}
+            html_content = render_to_string(
+                'pages/email.html', context)
+            text_content = strip_tags(html_content)
+
+            send_mail = EmailMultiAlternatives(
+                "Account email verification",
+                text_content,
+                settings.EMAIL_HOST_USER,
+                [email]
+            )
+            send_mail.attach_alternative(html_content, 'text/html')
+            send_mail.send()
+            profile = Profile(
+                user=email, auth_otp=num)
+            profile.save()
+            return redirect('verify')
     categories = Category.getCategory()
     data = {'categories': categories}
-
     return render(request, "pages/signup.html", data)
+
+
+# verify route
+
+
+def verify(request):
+    if request.user.is_authenticated:
+        return redirect('home')
+    else:
+        if request.method == 'POST':
+            count = Profile.objects.filter(
+                user=request.session['email']).count()
+            profile = Profile.objects.filter(
+                user=request.session['email'])
+            if request.POST.get('auth_otp') == profile.values('auth_otp')[count-1]['auth_otp']:
+                user = User.objects.create_user(
+                    username=request.session['username'], password=request.session['password'], email=request.session['email'])
+                user.save()
+                customer = Customer(first_name=request.session['fname'], last_name=request.session['lname'],
+                                    phone=request.session['phone'], email=request.session['email'], user=user)
+                customer.register()
+                auth.login(request, user)
+                profile.delete()
+                context = {'name': request.session['username']}
+                html_content = render_to_string(
+                    'pages/confirm_email.html', context)
+                text_content = strip_tags(html_content)
+
+                send_mail = EmailMultiAlternatives(
+                    "Registration Successfull",
+                    text_content,
+                    settings.EMAIL_HOST_USER,
+                    [request.session['email']]
+                )
+                send_mail.attach_alternative(html_content, 'text/html')
+                send_mail.send()
+                return redirect('home')
+            profile.delete()
+            messages.info(request, "Invalid otp or email register again!")
+            return redirect('signup')
+    return render(request, 'pages/verify.html')
 
 
 def signin(request):
     if not request.session.get('next_url'):
         request.session['next_url'] = request.GET.get('next')
     url = request.session.get('next_url')
-    print(url)
     if not request.session.get('cart'):
         request.session['cart'] = {}
 
@@ -141,9 +207,9 @@ def cart(request):
 def order(request):
     if not request.session.get('cart'):
         request.session['cart'] = {}
-    products = reversed(Order.objects.filter(customer=request.user.email))
+    orders = reversed(Order.objects.filter(customer=request.user.email))
     categories = Category.getCategory()
-    data = {'categories': categories, 'products': products}
+    data = {'categories': categories, 'orders': orders}
     return render(request, "orders/order.html", data)
 
 
@@ -187,13 +253,52 @@ def checkout(request):
         phone = request.POST.get('phone')
         cart = request.session.get('cart')
         products = Product.getAllProductsById(list(cart))
+        order_amount = 0
         for product in products:
-            order = Order(product=product, customer=request.user.email, price=product.price,
-                          quantity=cart.get(str(product.id)), address=address, phone=phone)
+            order_amount += product.price*int(cart.get(str(product.id)))*100
+        order_currency = 'INR'
+        order_receipt = "mynameisparkashsatiyaar"
+        notes = {'Shipping address': address,
+                 'client': request.user.email, 'product': product.name}
+        client = razorpay.Client(
+            auth=("rzp_test_FAXhzStIqvyJsh", "SaPnyZBpKrisAirIwpsMXMiz"))
+        payment = client.order.create(
+            dict(amount=order_amount, currency=order_currency, receipt=order_receipt, notes=notes))
+        print(payment)
+        request.session['payment_id'] = payment['id']
+        for product in products:
+            order = Order(product=product, customer=request.user.email, price=product.price*int(cart.get(str(product.id))),
+                          quantity=cart.get(str(product.id)), address=address, phone=phone, payment_id=payment['id'])
+            order.save()
+            print(product.price*int(cart.get(str(product.id))))
+        data = {'payment': payment, 'products': products}
+        return render(request, "pages/payment.html", data)
+    request.session['cart'] = {}
+    return redirect('order')
+
+
+@login_required(login_url='signin')
+def status(request):
+    payment_process = {
+        'razorpay_payment_id': request.GET.get('razorpay_payment_id'),
+        'razorpay_order_id': request.GET.get('razorpay_order_id'),
+        'razorpay_signature': request.GET.get('razorpay_signature')
+
+    }
+
+    client = razorpay.Client(
+        auth=("rzp_test_FAXhzStIqvyJsh", "SaPnyZBpKrisAirIwpsMXMiz"))
+    try:
+        client.utility.verify_payment_signature(payment_process)
+        orders = Order.objects.filter(
+            payment_id=request.session.get('payment_id'))
+        for order in orders:
+            order.status = True
             order.save()
         request.session['cart'] = {}
-
+    except:
         return redirect('order')
+    return redirect('order')
 
 
 @login_required(login_url='signin')

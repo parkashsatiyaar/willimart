@@ -4,7 +4,7 @@
 {% endfor %} {% endblock category %} {% block body %} {% load cart %}
 <div class="row mx-auto">
   <div class="col-md-3 fixed filter mx-auto">
-    <div class="product_card text-center">
+    <div class="card text-center">
       <h3>Filter</h3>
       <a href="/" class="list-group-item">All Products</a>
       <ul class="list-group">
@@ -22,7 +22,7 @@
         {% for product in products %}
 
         <div
-          class="col-lg-3 col-md-4 product_card product"
+          class="col-lg-3 col-md-5 product_card product"
           id="product-{{product.id}}"
         >
           <div class="product_img text-center">

@@ -68,6 +68,17 @@ class Order(models.Model):
     phone = models.CharField(max_length=15)
     date = models.DateField(default=datetime.datetime.today)
     status = models.BooleanField(default=False)
+    payment_id = models.CharField(max_length=100)
 
     def __str__(self):
         return self.customer
+
+
+class Profile(models.Model):
+    # user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.CharField(max_length=50)
+    auth_otp = models.CharField(max_length=5)
+    is_verified = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.user

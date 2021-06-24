@@ -12,10 +12,10 @@
         <div class="panel-body">
           <div></div>
           <div class="row">
-            {% for product in products %}
+            {% for order in orders %}
             <div class="col-md-1">
               <img
-                src="{{product.product.image.url}}"
+                src="{{order.product.image.url}}"
                 class="media-object img-thumbnail"
               />
             </div>
@@ -24,30 +24,28 @@
                 <div class="col-md-12">
                   <div class="pull-right">
                     {% if not order.status %}
-                    <label class="badge text-warning">Pending</label>
+                    <label class="badge text-danger">Failed</label>
                     {% else %}
                     <label class="badge text-success">Completed</label>
                     {% endif %}
                   </div>
                   <span><strong>Order ID</strong></span>
                   <span class="label label-info"
-                    ><span class="text-success">#{{product.id}}</span></span
+                    ><span class="text-success">#{{order.id}}</span></span
                   ><br />
                   <span><strong>Product Name</strong></span>
-                  <span class="label label-info">{{product.product.name}}</span
+                  <span class="label label-info">{{order.product.name}}</span
                   ><br />
                   <span><strong>Shipping Address</strong></span>
-                  <span class="label label-info">{{product.address}}</span
-                  ><br />
+                  <span class="label label-info">{{order.address}}</span><br />
                   <span><strong>Contact No</strong></span>
-                  <span class="label label-info">{{product.phone}}</span><br />
-                  Quantity : {{product.quantity}}, cost:
-                  &#8377;{{product.price|price_total_order:product.quantity}}
+                  <span class="label label-info">{{order.phone}}</span><br />
+                  Quantity : {{order.quantity}}, cost: &#8377;{{order.price}}
                   <br />
                 </div>
                 <div class="col-md-12">
-                  order made on: {{product.date}} by
-                  <a href="#">{{request.user.email}} </a>
+                  order made on: {{order.date}} by
+                  <a href="#">{{order.user.email}} </a>
                 </div>
               </div>
             </div>

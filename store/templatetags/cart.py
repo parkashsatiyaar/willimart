@@ -49,3 +49,12 @@ def cart_total_price(product, cart):
     for p in product:
         sum += price_total(p, cart)
     return sum
+
+
+@register.filter(name='cart_total_price_passa')
+def cart_total_price_passa(product, cart):
+    sum = 0
+    for p in product:
+        sum += price_total(p, cart)
+    sum*=100
+    return sum
